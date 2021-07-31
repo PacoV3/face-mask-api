@@ -1,11 +1,13 @@
 from flask_restful import Resource, Api, reqparse
 from thermal_recon import ThermalRecon
+from mask_recon import MaskRecon
 from flask import Flask
 import numpy as np
 import werkzeug
 import cv2
 
 thermal_model = ThermalRecon(model_location="thermal_mask_detector.model")
+mask_model = MaskRecon(model_location="mask_detector.model")
 app = Flask(__name__)
 api = Api(app)
 parser = reqparse.RequestParser()
@@ -35,9 +37,28 @@ class ThermalModel(Resource):
             return {"data":results, "message":"Photos uploaded successfully", "status":"success"}
         return {"data":[], "message":"Something went wrong!", "status":"error"}
 
+class MaskModel(Resource):
+    def post(self):
+        data = parser.parse_args()
+        if data["files"] == "":
+            return {"data":[], "message":"No file sent","status":"error"}
+        photos = data["files"]
+        results = []
+        if photos:
+            for photo in photos:
+                filestr = photo.read()
+                npimg = np.fromstring(filestr, np.uint8)
+                image = cv2.imdecode(npimg, cv2.COLOR_BGR2RGB)
+                mask, no_mask = mask_model.get_mask(image)
+                results.append({'mask': float(mask), 'no_mask': float(no_mask)})
+            return {"data":results, "message":"Photos uploaded successfully", "status":"success"}
+        return {"data":[], "message":"Something went wrong!", "status":"error"}
+
+
 
 api.add_resource(HelloWorld, "/")
 api.add_resource(ThermalModel,"/thermal_model")
+api.add_resource(MaskModel,"/mask_model")
 
 if __name__ == "__main__":
     app.run(host ="0.0.0.0", port = 5001, debug = True)
