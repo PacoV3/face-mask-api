@@ -21,12 +21,14 @@ class MaskRecon:
 
 def main():
     mask_recon = MaskRecon(thermal_model_location="thermal_mask_detector.model",
-                          rgb_model_location="mask_detector.model")
-    image = cv2.imread("examples/mask_color1.jpg")
+                          rgb_model_location="rgb_mask_detector.model")
+    image = cv2.imread("examples/no_mask_colo1.jpg")
     h, w = image.shape[:2]
     start_X, start_y = 10, 0
     end_X, end_y = w - 11, h - 1
-    mask, no_mask = mask_recon.get_mask_p(image[start_y:end_y, start_X:end_X], thermal=True)
+    recon_img = image[start_y:end_y, start_X:end_X]
+    mask, no_mask = mask_recon.get_mask_p(cv2.resize(recon_img, (224, 224)), thermal=False)
+    # mask, no_mask = mask_recon.get_mask_p(recon_img, thermal=True)
     print(f'Mask: {mask:0.2f}, No Mask: {no_mask:0.2f}')
 
 

@@ -6,7 +6,7 @@ import werkzeug
 import cv2
 
 mask_recon = MaskRecon(thermal_model_location="thermal_mask_detector.model",
-                          rgb_model_location="mask_detector.model")
+                          rgb_model_location="rgb_mask_detector.model")
 app = Flask(__name__)
 api = Api(app)
 parser = reqparse.RequestParser()
